@@ -178,5 +178,71 @@ public:
 };
 
 int main() {
+
     return 0;
+}
+enum Criterio { SIN_ORDEN = 0, POR_CODIGO = 1, POR_NOMBRE = 2, POR_PRECIO = 3 };
+
+string nombreCriterio(Criterio c) {
+    switch (c) {
+    case POR_CODIGO: return "código";
+    case POR_NOMBRE: return "nombre";
+    case POR_PRECIO: return "precio";
+    default:         return "sin ordenar";
+    }
+}
+
+int comparar(const Producto& a, const Producto& b, Criterio c) {
+    switch (c) {
+    case POR_CODIGO: return (a.codigo > b.codigo) - (a.codigo < b.codigo);
+    case POR_NOMBRE: {
+        int r = aMinusculas(a.nombre).compare(aMinusculas(b.nombre));
+        return (r > 0) - (r < 0);
+    }
+    case POR_PRECIO: return (a.precio > b.precio) - (a.precio < b.precio);
+    default:         return 0;
+    }
+}
+
+int particionar(ArregloProductos& arr, int bajo, int alto, Criterio c) {
+    Producto pivote = arr.obtener(alto);
+    int i = bajo - 1;
+    for (int j = bajo; j < alto; j++) {
+        if (comparar(arr.obtener(j), pivote, c) <= 0) {
+            i++;
+            arr.intercambiar(i, j);
+        }
+    }
+    arr.intercambiar(i + 1, alto);
+    return i + 1;
+}
+
+void quickSort(ArregloProductos& arr, int bajo, int alto, Criterio c) {
+    if (bajo < alto) {
+        int p = particionar(arr, bajo, alto, c);
+        quickSort(arr, bajo, p - 1, c);
+        quickSort(arr, p + 1, alto, c);
+    }
+}
+
+int busquedaSecuencial(ArregloProductos& arr, const Producto& clave, Criterio c,
+    int desde, int& comparaciones) {
+    for (int i = desde; i < arr.getTamano(); i++) {
+        comparaciones++;
+        if (comparar(arr.obtener(i), clave, c) == 0) return i;
+    }
+    return -1;
+}
+
+int busquedaBinaria(ArregloProductos& arr, const Producto& clave, Criterio c, int& comparaciones) {
+    int izq = 0, der = arr.getTamano() - 1;
+    while (izq <= der) {
+        int medio = izq + (der - izq) / 2;
+        comparaciones++;
+        int r = comparar(arr.obtener(medio), clave, c);
+        if (r == 0) return medio;
+        if (r < 0) izq = medio + 1;
+        else       der = medio - 1;
+    }
+    return -1;
 }
