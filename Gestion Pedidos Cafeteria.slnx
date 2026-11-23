@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Gestion Pedidos Cafeteria.vcxproj" />
+  <Project Path="Gestion Pedidos Cafeteria.vcxproj" Id="dc5fc203-73c4-4ba9-a1c2-0b3a298eba0a" />
 </Solution>

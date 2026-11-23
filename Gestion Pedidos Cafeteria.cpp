@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -75,8 +74,14 @@ void pausar() {
 
 string horaActual() {
     time_t t = time(nullptr);
+    tm info;
+#ifdef _WIN32
+    localtime_s(&info, &t);
+#else
+    localtime_r(&t, &info);
+#endif
     char buf[20];
-    strftime(buf, sizeof(buf), "%H:%M:%S", localtime(&t));
+    strftime(buf, sizeof(buf), "%H:%M:%S", &info);
     return buf;
 }
 
@@ -107,4 +112,71 @@ string derecha(const string& s, size_t ancho) {
 void titulo(const string& texto) {
     cout << "\n==================================================\n  " << texto
         << "\n==================================================\n";
+}
+
+struct Producto {
+    int codigo = 0;
+    string nombre;
+    string categoria;
+    double precio = 0.0;
+    bool disponible = true;
+};
+
+void encabezadoProductos() {
+    cout << columna("Código", 8) << columna("Nombre", 24) << columna("Categoría", 16)
+        << derecha("Precio", 10) << "  Disponible\n"
+        << string(70, '-') << "\n";
+}
+
+void mostrarProducto(const Producto& p) {
+    cout << columna(to_string(p.codigo), 8) << columna(p.nombre, 24) << columna(p.categoria, 16)
+        << derecha(dinero(p.precio), 10) << "  " << (p.disponible ? "Sí" : "No") << "\n";
+}
+
+void fichaProducto(const Producto& p) {
+    cout << "  Código      : " << p.codigo << "\n"
+        << "  Nombre      : " << p.nombre << "\n"
+        << "  Categoría   : " << p.categoria << "\n"
+        << "  Precio      : " << dinero(p.precio) << "\n"
+        << "  Disponible  : " << (p.disponible ? "Sí" : "No") << "\n";
+}
+
+class ArregloProductos {
+    Producto* datos;
+    int tamano;
+    int capacidad;
+
+    void redimensionar() {
+        capacidad *= 2;
+        Producto* nuevo = new Producto[capacidad];
+        for (int i = 0; i < tamano; i++) nuevo[i] = datos[i];
+        delete[] datos;
+        datos = nuevo;
+    }
+
+public:
+    explicit ArregloProductos(int capacidadInicial = 4)
+        : datos(new Producto[capacidadInicial]), tamano(0), capacidad(capacidadInicial) {
+    }
+    ~ArregloProductos() { delete[] datos; }
+    ArregloProductos(const ArregloProductos&) = delete;
+    ArregloProductos& operator=(const ArregloProductos&) = delete;
+
+    void agregar(const Producto& p) {
+        if (tamano == capacidad) redimensionar();
+        datos[tamano++] = p;
+    }
+    int getTamano() const { return tamano; }
+    int getCapacidad() const { return capacidad; }
+    bool estaVacio() const { return tamano == 0; }
+    Producto& obtener(int i) { return datos[i]; }
+    void intercambiar(int i, int j) {
+        Producto tmp = datos[i];
+        datos[i] = datos[j];
+        datos[j] = tmp;
+    }
+};
+
+int main() {
+    return 0;
 }
