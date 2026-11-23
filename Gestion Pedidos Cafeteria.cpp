@@ -246,3 +246,89 @@ int busquedaBinaria(ArregloProductos& arr, const Producto& clave, Criterio c, in
     }
     return -1;
 }
+struct Pedido {
+    int numero = 0;
+    string cliente;
+    int codigoProducto = 0;
+    string nombreProducto;
+    int cantidad = 0;
+    double precioUnitario = 0.0;
+    double total = 0.0;
+    string estado = "Pendiente";
+};
+
+struct NodoPedido {
+    Pedido dato;
+    NodoPedido* siguiente;
+    explicit NodoPedido(const Pedido& p) : dato(p), siguiente(nullptr) {}
+};
+
+void encabezadoPedidos() {
+    cout << columna("N°", 6) << columna("Cliente", 18) << columna("Producto", 20)
+        << derecha("Cant", 5) << derecha("P.Unit", 10) << derecha("Total", 11) << "  Estado\n"
+        << string(82, '-') << "\n";
+}
+
+void mostrarPedido(const Pedido& p) {
+    cout << columna(to_string(p.numero), 6) << columna(p.cliente, 18) << columna(p.nombreProducto, 20)
+        << derecha(to_string(p.cantidad), 5) << derecha(dinero(p.precioUnitario), 10)
+        << derecha(dinero(p.total), 11) << "  " << p.estado << "\n";
+}
+
+void fichaPedido(const Pedido& p) {
+    cout << "  Número          : " << p.numero << "\n"
+        << "  Cliente         : " << p.cliente << "\n"
+        << "  Producto        : " << p.nombreProducto << " (cód. " << p.codigoProducto << ")\n"
+        << "  Cantidad        : " << p.cantidad << "\n"
+        << "  Precio unitario : " << dinero(p.precioUnitario) << "\n"
+        << "  Total           : " << dinero(p.total) << "\n"
+        << "  Estado          : " << p.estado << "\n";
+}
+
+class ColaPedidos {
+    NodoPedido* frente;
+    NodoPedido* final;
+    int cantidad;
+
+public:
+    ColaPedidos() : frente(nullptr), final(nullptr), cantidad(0) {}
+    ~ColaPedidos() {
+        Pedido tmp;
+        while (desencolar(tmp)) {}
+    }
+    ColaPedidos(const ColaPedidos&) = delete;
+    ColaPedidos& operator=(const ColaPedidos&) = delete;
+
+    void encolar(const Pedido& p) {
+        NodoPedido* nuevo = new NodoPedido(p);
+        if (final == nullptr) frente = nuevo;
+        else final->siguiente = nuevo;
+        final = nuevo;
+        cantidad++;
+    }
+
+    bool desencolar(Pedido& salida) {
+        if (frente == nullptr) return false;
+        NodoPedido* aux = frente;
+        salida = aux->dato;
+        frente = frente->siguiente;
+        if (frente == nullptr) final = nullptr;
+        delete aux;
+        cantidad--;
+        return true;
+    }
+
+    Pedido* verFrente() { return frente ? &frente->dato : nullptr; }
+    bool estaVacia() const { return frente == nullptr; }
+    int getCantidad() const { return cantidad; }
+
+    void mostrar() const {
+        for (NodoPedido* n = frente; n != nullptr; n = n->siguiente) mostrarPedido(n->dato);
+    }
+
+    Pedido* buscar(int numero) {
+        for (NodoPedido* n = frente; n != nullptr; n = n->siguiente)
+            if (n->dato.numero == numero) return &n->dato;
+        return nullptr;
+    }
+};
